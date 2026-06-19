@@ -1,26 +1,129 @@
 @import "tailwindcss";
+@config "../../tailwind.config.ts";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ─── Theme: CSS Custom Properties ──────────────────────────────────── */
+
+:root,
+[data-theme="dark"] {
+  --color-base: #050a14;
+  --color-surface: rgba(255, 255, 255, 0.04);
+  --color-surface-hover: rgba(255, 255, 255, 0.07);
+  --color-edge: rgba(255, 255, 255, 0.09);
+  --color-txt-primary: #f0f4ff;
+  --color-txt-secondary: #8a9bc0;
+  --color-txt-muted: rgba(255, 255, 255, 0.28);
+  --color-card-bg: rgba(255, 255, 255, 0.04);
+  --color-input-bg: rgba(0, 0, 0, 0.3);
+  --color-backdrop: rgba(0, 0, 0, 0.6);
+  --color-tooltip-bg: #0d1525;
+  --scrollbar-track: rgba(255, 255, 255, 0.02);
+  --scrollbar-thumb: rgba(255, 255, 255, 0.1);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.2);
+  --grid-opacity: 0.03;
+  --orb-opacity: 0.18;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+[data-theme="light"] {
+  --color-base: #f0f2f7;
+  --color-surface: rgba(255, 255, 255, 0.75);
+  --color-surface-hover: rgba(255, 255, 255, 0.9);
+  --color-edge: rgba(0, 0, 0, 0.1);
+  --color-txt-primary: #0f1729;
+  --color-txt-secondary: #4b5c82;
+  --color-txt-muted: rgba(0, 0, 0, 0.35);
+  --color-card-bg: rgba(255, 255, 255, 0.75);
+  --color-input-bg: rgba(255, 255, 255, 0.6);
+  --color-backdrop: rgba(0, 0, 0, 0.3);
+  --color-tooltip-bg: #ffffff;
+  --scrollbar-track: rgba(0, 0, 0, 0.03);
+  --scrollbar-thumb: rgba(0, 0, 0, 0.12);
+  --scrollbar-thumb-hover: rgba(0, 0, 0, 0.22);
+  --grid-opacity: 0.04;
+  --orb-opacity: 0.10;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/* ─── Apply CSS variables to override Tailwind tokens ─────────────── */
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-base);
+  color: var(--color-txt-primary);
+  transition: background-color 0.35s ease, color 0.35s ease;
+}
+
+/* Override Tailwind bg-base, bg-surface, etc. via specificity */
+.bg-base        { background-color: var(--color-base) !important; }
+.bg-surface     { background-color: var(--color-surface) !important; }
+.bg-surface-hover { background-color: var(--color-surface-hover) !important; }
+
+.border-edge    { border-color: var(--color-edge) !important; }
+
+.text-txt-primary   { color: var(--color-txt-primary) !important; }
+.text-txt-secondary { color: var(--color-txt-secondary) !important; }
+.text-txt-muted     { color: var(--color-txt-muted) !important; }
+
+/* Light mode specific overrides for glass cards and inputs */
+[data-theme="light"] .bg-black\/20,
+[data-theme="light"] .bg-black\/30,
+[data-theme="light"] .bg-black\/40 {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+[data-theme="light"] .bg-black\/60 {
+  background-color: var(--color-backdrop) !important;
+}
+
+[data-theme="light"] .divide-white\/\[0\.03\] > :not([hidden]) ~ :not([hidden]) {
+  border-color: rgba(0, 0, 0, 0.06) !important;
+}
+
+[data-theme="light"] .hover\:bg-surface-hover:hover {
+  background-color: var(--color-surface-hover) !important;
+}
+
+/* Light mode table option elements */
+[data-theme="light"] option.bg-base {
+  background-color: #f0f2f7 !important;
+  color: #0f1729 !important;
+}
+
+/* Light mode orbs less prominent */
+[data-theme="light"] .opacity-\[0\.18\] {
+  opacity: var(--orb-opacity) !important;
+}
+[data-theme="light"] .opacity-\[0\.03\] {
+  opacity: var(--grid-opacity) !important;
+}
+
+/* Light mode: make grid lines darker */
+[data-theme="light"] .fixed.inset-0 > div:first-child {
+  opacity: var(--grid-opacity) !important;
+}
+
+/* Light mode shadows — softer */
+[data-theme="light"] {
+  --tw-shadow-color: rgba(0, 0, 0, 0.08);
+}
+
+/* ─── Selection ─────────────────────────────────────────────────────── */
+
+::selection {
+  background-color: #1a6fff;
+  color: white;
+}
+
+/* ─── Scrollbar ─────────────────────────────────────────────────────── */
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
 }
