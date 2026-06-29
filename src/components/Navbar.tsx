@@ -16,6 +16,7 @@ export default function Navbar() {
 
   useEffect(() => {
     const stored = getStoredTheme();
+    // eslint-disable-next-line
     setTheme(stored);
     applyTheme(stored);
   }, []);

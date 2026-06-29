@@ -14,6 +14,7 @@ export default function AuthGuard({ children }: { children: React.ReactNode }) {
     if (!token && !isPublic) {
       router.push('/login');
     } else {
+      // eslint-disable-next-line
       setLoading(false);
     }
   }, [pathname, router]);

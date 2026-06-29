@@ -53,6 +53,18 @@ export async function createDevice(data: {
     status: "offline",
     last_seen: null,
     created_at: new Date().toISOString(),
+    config: {
+      sampling_rate_seconds: 60,
+      temp_threshold_high: 30,
+      temp_threshold_low: 0,
+      hum_threshold_high: 80,
+      hum_threshold_low: 20,
+      shock_threshold: 15,
+      vibration_threshold: 0.5,
+      tilt_threshold: 30,
+      gps_enabled: true,
+      updated_at: new Date().toISOString(),
+    }
   }
   await ref.set(device)
   return device
@@ -84,6 +96,40 @@ export async function updateDevice(id: string, data: Record<string, any>) {
   await adminDb.collection("devices").doc(id).update(data)
   const updated = await adminDb.collection("devices").doc(id).get()
   return { id: updated.id, ...updated.data() }
+}
+
+export async function getDeviceConfigByIdAndKey(deviceIdStr: string, apiKey: string) {
+  const snapshot = await adminDb.collection("devices")
+    .where("device_id", "==", deviceIdStr)
+    .where("api_key", "==", apiKey)
+    .limit(1).get()
+  
+  if (snapshot.empty) return null
+  const doc = snapshot.docs[0]
+  const data = doc.data()
+  
+  return {
+    device_id: data.device_id,
+    config: data.config || {}
+  }
+}
+
+export async function updateDeviceConfig(id: string, configUpdates: Record<string, any>) {
+  const doc = await adminDb.collection("devices").doc(id).get()
+  if (!doc.exists) throw new Error("Device not found")
+  
+  const currentData = doc.data()
+  const currentConfig = currentData?.config || {}
+  
+  const newConfig = {
+    ...currentConfig,
+    ...configUpdates,
+    updated_at: new Date().toISOString(),
+  }
+  
+  await adminDb.collection("devices").doc(id).update({ config: newConfig })
+  
+  return newConfig
 }
 
 export async function deleteDevice(id: string) {
@@ -180,15 +226,27 @@ export async function addTelemetry(data: {
   shock_x: number
   shock_y: number
   shock_z: number
+  vibration?: number | null
+  tilt?: number | null
   lat: number | null
   lon: number | null
+  flags?: string[] | null
+  device_timestamp?: string | null
 }) {
+  // Compute shock_magnitude server-side
+  const shock_magnitude = Math.sqrt(
+    data.shock_x * data.shock_x + 
+    data.shock_y * data.shock_y + 
+    data.shock_z * data.shock_z
+  )
+
   // Store as subcollection under the device doc
   const ref = adminDb.collection("devices").doc(data.device_id)
     .collection("telemetry").doc()
   const telemetry = {
     id: ref.id,
     ...data,
+    shock_magnitude,
     timestamp: new Date().toISOString(),
   }
   await ref.set(telemetry)

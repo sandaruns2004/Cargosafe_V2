@@ -5,6 +5,7 @@ import {
   Smartphone, Signal, SignalLow, Key, ArrowLeft,
   Thermometer, Droplets, Battery, Navigation2, MapPin, Clock,
   Copy, Check, AlertTriangle, Bell, CheckCircle2, Download,
+  Activity, Settings2, Save
 } from "lucide-react";
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
@@ -19,6 +20,8 @@ export default function DeviceDetail() {
   const [alerts, setAlerts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [configSaving, setConfigSaving] = useState(false);
+  const [editedConfig, setEditedConfig] = useState<any>(null);
 
   const deviceId = params.id as string;
 
@@ -30,6 +33,9 @@ export default function DeviceDetail() {
         api.get("/alerts"),
       ]);
       setDevice(dev);
+      if (!editedConfig && dev.config) {
+        setEditedConfig(dev.config);
+      }
       setTelemetry(telRes.records || []);
       // Filter alerts for this device only
       setAlerts(allAlerts.filter((a: any) => a.device_id === deviceId));
@@ -61,6 +67,31 @@ export default function DeviceDetail() {
       setAlerts(alerts.map((a) => (a.id === id ? { ...a, resolved: true } : a)));
     } catch (err: any) {
       console.error(err);
+    }
+  }
+
+  async function saveConfig() {
+    if (!editedConfig) return;
+    setConfigSaving(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`/api/devices/${deviceId}/config`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(editedConfig)
+      });
+      if (res.ok) {
+        const updatedConfig = await res.json();
+        setDevice({ ...device, config: updatedConfig });
+        setEditedConfig(updatedConfig);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setConfigSaving(false);
     }
   }
 
@@ -130,7 +161,7 @@ export default function DeviceDetail() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
           {/* Live Sensor Readings */}
           <div className="lg:col-span-2">
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
               {/* Temperature */}
               <div className="rounded-2xl border border-edge bg-surface backdrop-blur-xl p-5 animate-fade-up">
                 <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${
@@ -197,6 +228,56 @@ export default function DeviceDetail() {
                   <p className="font-display text-2xl font-extrabold text-txt-primary leading-none">—</p>
                 )}
                 <p className="text-xs text-txt-secondary mt-1 uppercase tracking-wide">GPS</p>
+              </div>
+
+              {/* Vibration */}
+              <div className="rounded-2xl border border-edge bg-surface backdrop-blur-xl p-5 animate-fade-up" style={{ animationDelay: "0.4s" }}>
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${
+                  latest?.vibration !== undefined && latest.vibration > 1.0 ? "bg-coral/10 text-coral" :
+                  latest?.vibration !== undefined && latest.vibration > 0.5 ? "bg-amber/10 text-amber" :
+                  "bg-violet/10 text-violet"
+                }`}>
+                  <Activity className="w-5 h-5" />
+                </div>
+                <p className="font-display text-2xl font-extrabold text-txt-primary leading-none">
+                  {latest?.vibration !== undefined && latest?.vibration !== null ? `${Number(latest.vibration).toFixed(2)}` : "—"}
+                </p>
+                <p className="text-xs text-txt-secondary mt-1 uppercase tracking-wide">Vibration</p>
+                {latest?.vibration > 1.0 && <p className="text-[10px] text-coral font-semibold mt-1">⚠ CRITICAL</p>}
+                {latest?.vibration > 0.5 && latest?.vibration <= 1.0 && <p className="text-[10px] text-amber font-semibold mt-1">⚠ WARNING</p>}
+              </div>
+
+              {/* Tilt */}
+              <div className="rounded-2xl border border-edge bg-surface backdrop-blur-xl p-5 animate-fade-up" style={{ animationDelay: "0.5s" }}>
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${
+                  latest?.tilt !== undefined && latest.tilt > 45 ? "bg-coral/10 text-coral" :
+                  latest?.tilt !== undefined && latest.tilt > 30 ? "bg-amber/10 text-amber" :
+                  "bg-amber/10 text-amber"
+                }`}>
+                  <Activity className="w-5 h-5" />
+                </div>
+                <p className="font-display text-2xl font-extrabold text-txt-primary leading-none">
+                  {latest?.tilt !== undefined && latest?.tilt !== null ? `${Number(latest.tilt).toFixed(1)}°` : "—"}
+                </p>
+                <p className="text-xs text-txt-secondary mt-1 uppercase tracking-wide">Tilt (°)</p>
+                {latest?.tilt > 45 && <p className="text-[10px] text-coral font-semibold mt-1">⚠ CRITICAL</p>}
+                {latest?.tilt > 30 && latest?.tilt <= 45 && <p className="text-[10px] text-amber font-semibold mt-1">⚠ WARNING</p>}
+              </div>
+
+              {/* Flags */}
+              <div className="rounded-2xl border border-edge bg-surface backdrop-blur-xl p-5 animate-fade-up col-span-2 sm:col-span-3" style={{ animationDelay: "0.6s" }}>
+                <h3 className="text-xs font-bold text-txt-secondary uppercase tracking-wider mb-3">Active Device Flags</h3>
+                <div className="flex flex-wrap gap-2">
+                  {latest?.flags && latest.flags.length > 0 ? (
+                    latest.flags.map((flag: string) => (
+                      <span key={flag} className="px-3 py-1 rounded-full bg-neon/10 text-neon border border-neon/20 text-xs font-bold">
+                        {flag}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-txt-muted text-sm italic">No active flags.</span>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -283,6 +364,94 @@ export default function DeviceDetail() {
             <TelemetryChart data={telemetry} showShock={true} height={320} />
           </div>
         </div>
+
+        {/* Configuration Panel */}
+        {device.config && editedConfig && (
+          <div className="rounded-2xl border border-edge bg-surface backdrop-blur-xl overflow-hidden mb-8 animate-fade-up" style={{ animationDelay: '0.45s' }}>
+            <div className="px-6 py-5 border-b border-edge flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Settings2 className="w-5 h-5 text-neon" />
+                <h2 className="font-display font-bold text-lg text-txt-primary">Device Configuration</h2>
+              </div>
+              <button
+                onClick={saveConfig}
+                disabled={configSaving}
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-neon text-black font-bold text-sm hover:bg-neon/90 transition-all disabled:opacity-50"
+              >
+                <Save className="w-4 h-4" />
+                {configSaving ? "Saving..." : "Save Config"}
+              </button>
+            </div>
+            <div className="p-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
+              <div className="space-y-1">
+                <label className="text-xs text-txt-secondary uppercase tracking-wider">Sampling Rate (sec)</label>
+                <input
+                  type="number"
+                  value={editedConfig.sampling_rate_seconds}
+                  onChange={(e) => setEditedConfig({ ...editedConfig, sampling_rate_seconds: Number(e.target.value) })}
+                  className="w-full bg-black/30 border border-edge rounded-lg px-3 py-2 text-sm focus:border-neon focus:ring-1 focus:ring-neon outline-none"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-txt-secondary uppercase tracking-wider">Shock Thresh (m/s²)</label>
+                <input
+                  type="number"
+                  value={editedConfig.shock_threshold}
+                  onChange={(e) => setEditedConfig({ ...editedConfig, shock_threshold: Number(e.target.value) })}
+                  className="w-full bg-black/30 border border-edge rounded-lg px-3 py-2 text-sm focus:border-neon focus:ring-1 focus:ring-neon outline-none"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-txt-secondary uppercase tracking-wider">Vibration Thresh</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  value={editedConfig.vibration_threshold}
+                  onChange={(e) => setEditedConfig({ ...editedConfig, vibration_threshold: Number(e.target.value) })}
+                  className="w-full bg-black/30 border border-edge rounded-lg px-3 py-2 text-sm focus:border-neon focus:ring-1 focus:ring-neon outline-none"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-txt-secondary uppercase tracking-wider">Tilt Thresh (°)</label>
+                <input
+                  type="number"
+                  value={editedConfig.tilt_threshold}
+                  onChange={(e) => setEditedConfig({ ...editedConfig, tilt_threshold: Number(e.target.value) })}
+                  className="w-full bg-black/30 border border-edge rounded-lg px-3 py-2 text-sm focus:border-neon focus:ring-1 focus:ring-neon outline-none"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-txt-secondary uppercase tracking-wider">Temp High (°C)</label>
+                <input
+                  type="number"
+                  value={editedConfig.temp_threshold_high}
+                  onChange={(e) => setEditedConfig({ ...editedConfig, temp_threshold_high: Number(e.target.value) })}
+                  className="w-full bg-black/30 border border-edge rounded-lg px-3 py-2 text-sm focus:border-neon focus:ring-1 focus:ring-neon outline-none"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-txt-secondary uppercase tracking-wider">Hum High (%)</label>
+                <input
+                  type="number"
+                  value={editedConfig.hum_threshold_high}
+                  onChange={(e) => setEditedConfig({ ...editedConfig, hum_threshold_high: Number(e.target.value) })}
+                  className="w-full bg-black/30 border border-edge rounded-lg px-3 py-2 text-sm focus:border-neon focus:ring-1 focus:ring-neon outline-none"
+                />
+              </div>
+              <div className="space-y-1 md:col-span-2 flex items-center pt-4">
+                <label className="flex items-center gap-3 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={editedConfig.gps_enabled}
+                    onChange={(e) => setEditedConfig({ ...editedConfig, gps_enabled: e.target.checked })}
+                    className="w-5 h-5 accent-neon rounded border-edge"
+                  />
+                  <span className="text-sm font-medium">Enable GPS Tracking</span>
+                </label>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Device Alerts */}
         <div className="rounded-2xl border border-edge bg-surface backdrop-blur-xl overflow-hidden animate-fade-up" style={{ animationDelay: '0.5s' }}>

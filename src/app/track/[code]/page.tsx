@@ -1,5 +1,5 @@
 "use client"
-import { MapPin, Thermometer, Droplets, Clock, Package, Navigation2, Battery, RefreshCw, Wifi } from "lucide-react";
+import { MapPin, Thermometer, Droplets, Clock, Package, Navigation2, Activity, RefreshCw, Wifi } from "lucide-react";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Script from "next/script";
@@ -139,10 +139,7 @@ export default function PublicTracking() {
   };
   const statusColor = data ? (statusColors[data.status] ?? "bg-gray-100 text-gray-700 border-gray-200") : "";
 
-  let shockMagnitude: number | null = null;
-  if (data && data.shock_x !== null && data.shock_y !== null && data.shock_z !== null && data.shock_x !== undefined) {
-    shockMagnitude = Math.sqrt(data.shock_x * data.shock_x + data.shock_y * data.shock_y + data.shock_z * data.shock_z);
-  }
+  let shockMagnitude: number | null = data?.shock_magnitude ?? null;
 
   if (loading) {
     return (
@@ -250,7 +247,7 @@ export default function PublicTracking() {
           </div>
 
           {/* Sensor cards */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
             {/* Temperature */}
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex items-start gap-4">
               <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
@@ -310,12 +307,62 @@ export default function PublicTracking() {
               <div>
                 <p className="text-sm font-medium text-gray-500 mb-1">Shock</p>
                 <p className="text-2xl font-bold text-gray-900">
-                  {shockMagnitude !== null ? `${shockMagnitude.toFixed(1)} m/s²` : "—"}
+                  {shockMagnitude !== null ? `${shockMagnitude.toFixed(1)}` : "—"}
                 </p>
                 {shockMagnitude !== null && shockMagnitude > 20 && (
                   <p className="text-xs text-red-500 font-medium mt-1">⚠ Critical</p>
                 )}
                 {shockMagnitude !== null && shockMagnitude > 15 && shockMagnitude <= 20 && (
+                  <p className="text-xs text-orange-500 font-medium mt-1">⚠ Warning</p>
+                )}
+              </div>
+            </div>
+
+            {/* Vibration */}
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex items-start gap-4">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
+                data.vibration !== null && data.vibration !== undefined && data.vibration > 1.0
+                  ? "bg-red-50 text-red-500"
+                  : data.vibration !== null && data.vibration !== undefined && data.vibration > 0.5
+                  ? "bg-orange-50 text-orange-500"
+                  : "bg-purple-50 text-purple-500"
+              }`}>
+                <Activity className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500 mb-1">Vibration</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {data.vibration !== null && data.vibration !== undefined ? `${data.vibration.toFixed(2)}` : "—"}
+                </p>
+                {data.vibration !== null && data.vibration !== undefined && data.vibration > 1.0 && (
+                  <p className="text-xs text-red-500 font-medium mt-1">⚠ Critical</p>
+                )}
+                {data.vibration !== null && data.vibration !== undefined && data.vibration > 0.5 && data.vibration <= 1.0 && (
+                  <p className="text-xs text-orange-500 font-medium mt-1">⚠ Warning</p>
+                )}
+              </div>
+            </div>
+
+            {/* Tilt */}
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 flex items-start gap-4">
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
+                data.tilt !== null && data.tilt !== undefined && data.tilt > 45
+                  ? "bg-red-50 text-red-500"
+                  : data.tilt !== null && data.tilt !== undefined && data.tilt > 30
+                  ? "bg-orange-50 text-orange-500"
+                  : "bg-orange-50 text-orange-400"
+              }`}>
+                <Activity className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-500 mb-1">Tilt</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {data.tilt !== null && data.tilt !== undefined ? `${data.tilt.toFixed(1)}°` : "—"}
+                </p>
+                {data.tilt !== null && data.tilt !== undefined && data.tilt > 45 && (
+                  <p className="text-xs text-red-500 font-medium mt-1">⚠ Critical</p>
+                )}
+                {data.tilt !== null && data.tilt !== undefined && data.tilt > 30 && data.tilt <= 45 && (
                   <p className="text-xs text-orange-500 font-medium mt-1">⚠ Warning</p>
                 )}
               </div>
@@ -374,7 +421,7 @@ export default function PublicTracking() {
                   <p className="text-xs text-gray-500">{new Date(point.timestamp).toLocaleString()}</p>
                   {point.temp !== undefined && (
                     <p className="text-xs text-gray-400 mt-0.5">
-                      🌡 {point.temp}°C · 💧 {point.hum}%
+                      🌡 {point.temp}°C · 💧 {point.hum}% {point.shock_magnitude !== null ? `· ⚡ ${point.shock_magnitude.toFixed(1)}` : ""}
                     </p>
                   )}
                 </div>
@@ -383,7 +430,7 @@ export default function PublicTracking() {
                 <div className="relative pl-6">
                   <div className="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-white border-2 border-gray-300" />
                   <p className="font-medium text-sm text-gray-900 mb-0.5">Shipment Created</p>
-                  <p className="text-xs text-gray-500">{new Date(data.last_update || Date.now()).toLocaleString()}</p>
+                  <p className="text-xs text-gray-500">{data.last_update ? new Date(data.last_update).toLocaleString() : "Just now"}</p>
                 </div>
               )}
             </div>

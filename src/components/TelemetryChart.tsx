@@ -1,4 +1,5 @@
 "use client";
+import { useState } from "react";
 import {
   LineChart,
   Line,
@@ -17,6 +18,9 @@ interface TelemetryPoint {
   shock_x?: number;
   shock_y?: number;
   shock_z?: number;
+  shock_magnitude?: number;
+  vibration?: number;
+  tilt?: number;
 }
 
 interface TelemetryChartProps {
@@ -35,10 +39,21 @@ export default function TelemetryChart({
   showShock = true,
   height = 280,
 }: TelemetryChartProps) {
+  const [hiddenLines, setHiddenLines] = useState<Record<string, boolean>>({});
+
+  const toggleLine = (dataKey: string) => {
+    setHiddenLines((prev) => ({
+      ...prev,
+      [dataKey]: !prev[dataKey],
+    }));
+  };
+
   // Data comes newest-first from the API; reverse for chart (oldest → newest)
   const chartData = [...data].reverse().map((d) => {
     let shockMag = null;
-    if (d.shock_x !== undefined && d.shock_y !== undefined && d.shock_z !== undefined && d.shock_x !== null && d.shock_y !== null && d.shock_z !== null) {
+    if (d.shock_magnitude !== undefined && d.shock_magnitude !== null) {
+      shockMag = d.shock_magnitude;
+    } else if (d.shock_x !== undefined && d.shock_y !== undefined && d.shock_z !== undefined && d.shock_x !== null && d.shock_y !== null && d.shock_z !== null) {
       shockMag = Math.sqrt(d.shock_x * d.shock_x + d.shock_y * d.shock_y + d.shock_z * d.shock_z);
     }
     return {
@@ -46,6 +61,8 @@ export default function TelemetryChart({
       temp: d.temp ?? null,
       hum: d.hum ?? null,
       shock: shockMag,
+      vibration: d.vibration ?? null,
+      tilt: d.tilt ?? null,
     };
   });
 
@@ -99,7 +116,12 @@ export default function TelemetryChart({
           <Legend
             iconType="circle"
             iconSize={8}
-            wrapperStyle={{ fontSize: "11px", paddingTop: "8px" }}
+            wrapperStyle={{ fontSize: "11px", paddingTop: "8px", cursor: "pointer" }}
+            onClick={(e: any) => {
+              if (e && typeof e.dataKey === "string") {
+                toggleLine(e.dataKey);
+              }
+            }}
           />
           <Line
             type="monotone"
@@ -110,6 +132,7 @@ export default function TelemetryChart({
             activeDot={{ r: 5, fill: "#ff4d6d", strokeWidth: 0 }}
             name="Temp (°C)"
             connectNulls
+            hide={hiddenLines["temp"]}
           />
           <Line
             type="monotone"
@@ -120,6 +143,7 @@ export default function TelemetryChart({
             activeDot={{ r: 5, fill: "#1a6fff", strokeWidth: 0 }}
             name="Hum (%)"
             connectNulls
+            hide={hiddenLines["hum"]}
           />
           {showShock && (
             <Line
@@ -131,8 +155,31 @@ export default function TelemetryChart({
               activeDot={{ r: 5, fill: "#00c9a7", strokeWidth: 0 }}
               name="Shock (m/s²)"
               connectNulls
+              hide={hiddenLines["shock"]}
             />
           )}
+          <Line
+            type="monotone"
+            dataKey="vibration"
+            stroke="#8b5cf6"
+            strokeWidth={2}
+            dot={false}
+            activeDot={{ r: 5, fill: "#8b5cf6", strokeWidth: 0 }}
+            name="Vibration"
+            connectNulls
+            hide={hiddenLines["vibration"]}
+          />
+          <Line
+            type="monotone"
+            dataKey="tilt"
+            stroke="#f59e0b"
+            strokeWidth={2}
+            dot={false}
+            activeDot={{ r: 5, fill: "#f59e0b", strokeWidth: 0 }}
+            name="Tilt (°)"
+            connectNulls
+            hide={hiddenLines["tilt"]}
+          />
         </LineChart>
       </ResponsiveContainer>
     </div>

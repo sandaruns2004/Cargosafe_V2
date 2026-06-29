@@ -5,7 +5,11 @@ import { autoGenerateAlerts } from "@/lib/alerts"
 
 // POST /api/telemetry — Device submits sensor data (NO JWT, uses api_key)
 export async function POST(req: Request) {
-  const { device_id, api_key, temp, hum, shock_x, shock_y, shock_z, lat, lon } = await req.json()
+  const {
+    device_id, api_key, timestamp: deviceTimestamp,
+    temp, hum, shock_x, shock_y, shock_z,
+    vibration, tilt, lat, lon, flags
+  } = await req.json()
 
   const device = await db.findDeviceByIdAndKey(device_id, api_key)
   if (!device) {
@@ -26,12 +30,19 @@ export async function POST(req: Request) {
     shock_x,
     shock_y,
     shock_z,
-    lat: lat || null,
-    lon: lon || null,
+    vibration: vibration ?? null,
+    tilt: tilt ?? null,
+    lat: lat ?? null,
+    lon: lon ?? null,
+    flags: flags ?? null,
+    device_timestamp: deviceTimestamp ?? null,
   })
 
   // Auto-generate alerts
-  await autoGenerateAlerts(device.id, temp, hum, shock_x, shock_y, shock_z)
+  await autoGenerateAlerts(
+    device.id, temp, hum, shock_x, shock_y, shock_z, 
+    vibration ?? null, tilt ?? null
+  )
 
   return NextResponse.json(telemetry)
 }

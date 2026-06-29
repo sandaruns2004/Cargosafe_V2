@@ -22,14 +22,18 @@ export async function autoGenerateAlerts(
   hum: number,
   shock_x: number,
   shock_y: number,
-  shock_z: number
+  shock_z: number,
+  vibration: number | null,
+  tilt: number | null
 ) {
   const checks = await Promise.all([
     hasUnresolvedAlert(deviceDocId, "temperature"),
     hasUnresolvedAlert(deviceDocId, "humidity"),
     hasUnresolvedAlert(deviceDocId, "shock"),
+    hasUnresolvedAlert(deviceDocId, "vibration"),
+    hasUnresolvedAlert(deviceDocId, "tilt"),
   ])
-  const [hasTempAlert, hasHumidityAlert, hasShockAlert] = checks
+  const [hasTempAlert, hasHumidityAlert, hasShockAlert, hasVibrationAlert, hasTiltAlert] = checks
 
   const promises: Promise<any>[] = []
 
@@ -77,6 +81,44 @@ export async function autoGenerateAlerts(
         device_id: deviceDocId,
         type: "shock",
         message: `WARNING: Shock high ${shockMagnitude.toFixed(2)} m/s²`,
+        level: "warning",
+      }))
+    }
+  }
+
+  // Vibration threshold
+  if (!hasVibrationAlert && vibration !== null) {
+    if (vibration > 1.0) {
+      promises.push(db.createAlert({
+        device_id: deviceDocId,
+        type: "vibration",
+        message: `CRITICAL: Vibration ${vibration.toFixed(2)} > 1.0`,
+        level: "critical",
+      }))
+    } else if (vibration > 0.5) {
+      promises.push(db.createAlert({
+        device_id: deviceDocId,
+        type: "vibration",
+        message: `WARNING: Vibration ${vibration.toFixed(2)} > 0.5`,
+        level: "warning",
+      }))
+    }
+  }
+
+  // Tilt threshold
+  if (!hasTiltAlert && tilt !== null) {
+    if (tilt > 45) {
+      promises.push(db.createAlert({
+        device_id: deviceDocId,
+        type: "tilt",
+        message: `CRITICAL: Tilt ${tilt.toFixed(1)}° > 45°`,
+        level: "critical",
+      }))
+    } else if (tilt > 30) {
+      promises.push(db.createAlert({
+        device_id: deviceDocId,
+        type: "tilt",
+        message: `WARNING: Tilt ${tilt.toFixed(1)}° > 30°`,
         level: "warning",
       }))
     }

@@ -14,6 +14,9 @@ export default function TestTelemetryPage() {
   const [shockX, setShockX] = useState(0)
   const [shockY, setShockY] = useState(0)
   const [shockZ, setShockZ] = useState(9.8)
+  const [vibration, setVibration] = useState(0)
+  const [tilt, setTilt] = useState(0)
+  const [flags, setFlags] = useState<string[]>([])
   const [lat, setLat] = useState<number | "">("")
   const [lon, setLon] = useState<number | "">("")
   const [response, setResponse] = useState<string>("")
@@ -86,11 +89,15 @@ export default function TestTelemetryPage() {
       const payload = {
         device_id: deviceId,
         api_key: apiKey,
+        timestamp: new Date().toISOString(),
         temp: temp,
         hum: hum,
         shock_x: shockX,
         shock_y: shockY,
         shock_z: shockZ,
+        vibration: vibration,
+        tilt: tilt,
+        flags: flags.length > 0 ? flags : undefined,
         ...(lat !== "" && { lat: Number(lat) }),
         ...(lon !== "" && { lon: Number(lon) }),
       }
@@ -114,6 +121,14 @@ export default function TestTelemetryPage() {
   const getTempColor = (val: number) => val > 35 ? "text-coral border-coral" : val > 30 ? "text-amber border-amber" : "text-neon border-neon"
   const getHumColor = (val: number) => val > 80 ? "text-amber border-amber" : "text-neon border-neon"
   const getShockColor = (val: number) => Math.abs(val) > 15 ? "text-amber border-amber" : "text-teal border-teal"
+  const getVibrationColor = (val: number) => val > 1.0 ? "text-coral border-coral" : val > 0.5 ? "text-amber border-amber" : "text-violet border-violet"
+  const getTiltColor = (val: number) => val > 45 ? "text-coral border-coral" : val > 30 ? "text-amber border-amber" : "text-amber border-amber"
+
+  const availableFlags = ["TEMP_HI", "TEMP_LO", "HUM_HI", "HUM_LO", "SHOCK", "VIBRATION", "TILT"]
+  
+  const toggleFlag = (flag: string) => {
+    setFlags(prev => prev.includes(flag) ? prev.filter(f => f !== flag) : [...prev, flag])
+  }
 
   return (
     <div className="min-h-screen bg-base text-txt-primary font-body relative overflow-x-hidden p-4 py-12">
@@ -227,6 +242,46 @@ export default function TestTelemetryPage() {
                   <span className={`text-xs font-mono px-2 py-0.5 rounded-md border ${getShockColor(shockZ)} bg-white/[0.03]`}>{shockZ.toFixed(1)}</span>
                 </div>
                 <input type="range" min="-30" max="30" step="0.5" value={shockZ} onChange={e => setShockZ(parseFloat(e.target.value))} className="w-full accent-amber" />
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <label className="flex items-center gap-2 text-sm font-medium"><Activity className="w-4 h-4 text-violet" /> Vibration</label>
+                  <span className={`text-xs font-mono px-2 py-0.5 rounded-md border ${getVibrationColor(vibration)} bg-white/[0.03]`}>{vibration.toFixed(2)}</span>
+                </div>
+                <input type="range" min="0" max="2" step="0.01" value={vibration} onChange={e => setVibration(parseFloat(e.target.value))} className="w-full accent-violet" />
+              </div>
+
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <label className="flex items-center gap-2 text-sm font-medium"><Activity className="w-4 h-4 text-amber" /> Tilt (°)</label>
+                  <span className={`text-xs font-mono px-2 py-0.5 rounded-md border ${getTiltColor(tilt)} bg-white/[0.03]`}>{tilt.toFixed(1)}°</span>
+                </div>
+                <input type="range" min="0" max="90" step="0.5" value={tilt} onChange={e => setTilt(parseFloat(e.target.value))} className="w-full accent-amber" />
+              </div>
+            </div>
+
+            <hr className="border-edge" />
+
+            {/* Device Flags */}
+            <div className="space-y-4">
+              <h2 className="text-sm font-bold text-txt-secondary uppercase tracking-wider flex items-center gap-2">
+                <ShieldAlert className="w-4 h-4" /> Device Flags
+              </h2>
+              <div className="flex flex-wrap gap-2">
+                {availableFlags.map(flag => (
+                  <button
+                    key={flag}
+                    onClick={() => toggleFlag(flag)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-bold transition-colors border ${
+                      flags.includes(flag)
+                        ? "bg-neon/20 text-neon border-neon"
+                        : "bg-surface text-txt-muted border-edge hover:bg-white/5 hover:text-white"
+                    }`}
+                  >
+                    {flag}
+                  </button>
+                ))}
               </div>
             </div>
 

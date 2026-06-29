@@ -18,9 +18,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ code: st
   let location = null
   let temp = null
   let hum = null
-  let shock_x = null
-  let shock_y = null
-  let shock_z = null
+  let shock_magnitude = null
+  let vibration = null
+  let tilt = null
   let path: any[] = []
 
   if (shipment.device_id) {
@@ -42,9 +42,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ code: st
         last_update = latest.timestamp
         temp = latest.temp ?? null
         hum = latest.hum ?? null
-        shock_x = latest.shock_x ?? null
-        shock_y = latest.shock_y ?? null
-        shock_z = latest.shock_z ?? null
+        shock_magnitude = latest.shock_magnitude ?? null
+        vibration = latest.vibration ?? null
+        tilt = latest.tilt ?? null
         if (latest.lat && latest.lon) {
           location = { lat: latest.lat, lon: latest.lon }
         }
@@ -60,9 +60,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ code: st
             timestamp: record.timestamp,
             temp: record.temp,
             hum: record.hum,
-            shock_x: record.shock_x,
-            shock_y: record.shock_y,
-            shock_z: record.shock_z,
+            shock_magnitude: record.shock_magnitude ?? null,
+            vibration: record.vibration ?? null,
+            tilt: record.tilt ?? null,
           })
         }
       }
@@ -80,9 +80,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ code: st
     location,
     temp,
     hum,
-    shock_x,
-    shock_y,
-    shock_z,
+    shock_magnitude,
+    vibration,
+    tilt,
     path,
   })
 }
