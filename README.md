@@ -1,56 +1,64 @@
-# 📦 CargoSafe v2.0
+<div align="center">
+  <img src="https://img.icons8.com/?size=512&id=5nLOfxYgP5O0&format=png" alt="CargoSafe Logo" width="120" height="120" />
+  <h1>CargoSafe Platform v2.0</h1>
+  <p><strong>Premium Enterprise Fleet Intelligence & IoT Cargo Tracking Platform</strong></p>
 
-> **Premium Enterprise Fleet Intelligence & Cargo Tracking Platform**
+  <p>
+    <img src="https://img.shields.io/badge/Next.js-16.2-black?logo=next.js" alt="Next.js" />
+    <img src="https://img.shields.io/badge/React-19-blue?logo=react" alt="React" />
+    <img src="https://img.shields.io/badge/Tailwind_CSS-v4-38B2AC?logo=tailwind-css" alt="Tailwind CSS" />
+    <img src="https://img.shields.io/badge/Firebase-Firestore-FFCA28?logo=firebase" alt="Firebase" />
+  </p>
+</div>
 
-CargoSafe is a **full-stack Next.js 16** application with a **glassmorphic, dark-luxury UI** powered by **Tailwind CSS v4**. It provides real-time IoT telemetry ingestion, an automated alerts engine, and a public shipment tracking portal — all backed by **Firebase Firestore & Firebase Auth**.
+<br />
 
----
-
-## ✨ Key Features
-
-| Feature | Description |
-|---|---|
-| 🎨 **Premium Design System** | Glassmorphic cards, neon gradients, micro-animations, and a deep dark-mode luxury theme |
-| 🔐 **Firebase Auth (Hybrid)** | Client-side email/password sign-in + server-side Admin SDK JWT verification |
-| 📡 **IoT Telemetry Ingestion** | Hardware devices (ESP32, RPi) push sensor data via API key auth |
-| 🚨 **Auto Alert Engine** | Server-side threshold evaluation on every telemetry push (temp, humidity, battery) |
-| 🗺️ **Public Tracking Portal** | Shareable `TRK-...` links expose live GPS path & sensor state — no account needed |
-| 📦 **Device Management** | Register devices, copy API keys, view online/offline status |
-| 🚢 **Shipment Lifecycle** | Create, assign devices, generate QR codes, and track status |
-| 📊 **Telemetry Charts** | Recharts-powered time-series graphs for temperature & humidity trends |
-| 🧪 **Test Telemetry UI** | Developer tool to manually push sensor payloads for testing |
+CargoSafe is a next-generation **IoT telematics and logistics platform** built on a unified full-stack **Next.js 16** architecture. Featuring a stunning glassmorphic, dark-luxury UI, it provides real-time sensor data ingestion, automated environmental alerting, and a public shipment tracking portal designed for modern fleet management.
 
 ---
 
-## 🛠️ Tech Stack
+## ✨ Enterprise Features
+
+- 🎨 **Premium UI/UX Design System**: Built with Tailwind CSS v4, featuring glassmorphic cards, neon gradients, subtle micro-animations, and a highly polished dark-mode aesthetic.
+- 📡 **Advanced IoT Telemetry Engine**: Ingests multi-dimensional environmental data (Temperature, Humidity, Vibration, Tilt, and 3-Axis Shock) from hardware trackers (ESP32, Raspberry Pi) via secure API key authentication.
+- ⚙️ **Over-The-Air (OTA) Configuration**: Remotely adjust hardware parameters (sampling rates, GPS toggles, and environmental thresholds) directly from the web dashboard.
+- 🚨 **Automated Alerting System**: Server-side threshold evaluation automatically flags critical environmental breaches in real-time.
+- 🗺️ **Public Tracking Portal**: Generate shareable, tokenized `TRK-...` tracking links exposing live GPS routes and sensor states without requiring an account.
+- 📦 **End-to-End Shipment Lifecycle**: Create shipments, assign tracking devices, generate QR codes, and monitor global status.
+- 📊 **Interactive Data Visualization**: 5-line time-series telemetry charts powered by Recharts for deep analytical insights.
+
+---
+
+## 🛠️ Technology Stack
 
 | Layer | Technology |
 |---|---|
-| **Framework** | Next.js 16 (App Router) – TypeScript |
-| **Frontend** | React 19, Tailwind CSS v4, Recharts 3, Lucide React 1.x |
-| **Backend** | Next.js API Routes (Node.js serverless) |
-| **Database** | Firebase Firestore (NoSQL document store) |
-| **Authentication** | Firebase Auth (client) + Firebase Admin SDK (server JWT verification) |
-| **QR Codes** | `qrcode.react` v4 |
-| **Fonts** | Syne (display), Inter (body), JetBrains Mono (code) — via Google Fonts |
+| **Framework** | Next.js 16 (App Router) & TypeScript |
+| **Frontend UI** | React 19, Tailwind CSS v4, Recharts 3, Lucide React 1.x, Leaflet Maps |
+| **Backend API** | Next.js API Routes (Node.js Serverless Functions) |
+| **Database** | Firebase Firestore (NoSQL Document Store) |
+| **Authentication** | Firebase Auth (Client) + Firebase Admin SDK (Server JWT Verification) |
+| **Typography** | Syne (Display), Inter (Body), JetBrains Mono (Code) |
 
 ---
 
 ## 🚀 Getting Started
 
+Follow these instructions to spin up your local development environment.
+
 ### 1. Prerequisites
 
-- A [Firebase](https://firebase.google.com/) project with:
-  - **Firestore Database** enabled (Native mode)
-  - **Authentication** enabled → Email/Password provider
-  - A **Service Account Private Key** downloaded (for Admin SDK)
+You will need a [Firebase Console](https://firebase.google.com/) project configured with:
+1. **Firestore Database** (Native mode enabled).
+2. **Authentication** (Email/Password provider enabled).
+3. A downloaded **Service Account Private Key** (for the Firebase Admin SDK).
 
-### 2. Environment Variables
+### 2. Environment Configuration
 
-Create `.env.local` in the project root:
+Create a `.env.local` file in the root of the project and populate it with your Firebase credentials:
 
 ```env
-# ── Client SDK (public) ──────────────────────────────────────
+# ── Client SDK (Public) ──────────────────────────────────────
 NEXT_PUBLIC_FIREBASE_API_KEY="your-api-key"
 NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN="your-project.firebaseapp.com"
 NEXT_PUBLIC_FIREBASE_PROJECT_ID="your-project-id"
@@ -58,120 +66,95 @@ NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET="your-project.appspot.com"
 NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID="your-sender-id"
 NEXT_PUBLIC_FIREBASE_APP_ID="your-app-id"
 
-# ── Admin SDK (server-only, never exposed to browser) ────────
+# ── Admin SDK (Server-only, strictly confidential) ───────────
 FIREBASE_PROJECT_ID="your-project-id"
-FIREBASE_CLIENT_EMAIL="firebase-adminsdk-xxxx@your-project.iam.gserviceaccount.com"
+FIREBASE_CLIENT_EMAIL="firebase-adminsdk-xxxx@your.iam.gserviceaccount.com"
 FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nYOUR_KEY_HERE\n-----END PRIVATE KEY-----\n"
 ```
+> **⚠️ Critical:** Ensure the `FIREBASE_PRIVATE_KEY` retains the `\n` escape sequences exactly as exported from the Firebase console.
 
-> ⚠️ The `FIREBASE_PRIVATE_KEY` must retain `\n` escape sequences exactly as exported from the Firebase console.
-
-### 3. Install & Run
+### 3. Installation & Execution
 
 ```bash
+# Install dependencies
 npm install
+
+# Start the development server
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) — you will be redirected to `/login`. Register an account to access the dashboard.
+Navigate to [http://localhost:3000](http://localhost:3000) in your browser. You will be securely redirected to the `/login` portal.
 
 ---
 
-## 📂 Project Structure
+## 📡 Hardware Integration (IoT API)
 
+CargoSafe provides simple REST endpoints for your hardware engineers to push data and pull configurations.
+
+### Ingest Telemetry (POST)
+Endpoint: `POST /api/telemetry`
+```json
+{
+  "device_id": "DEV-123",
+  "api_key": "SECURE_KEY",
+  "timestamp": "2023-08-01T12:34:56Z",
+  "temp": 25.5,
+  "hum": 60.2,
+  "shock_x": 0.123,
+  "shock_y": -0.456,
+  "shock_z": 0.789,
+  "vibration": 0.012,
+  "tilt": 15.3,
+  "lat": 12.345678,
+  "lon": 98.765432,
+  "flags": ["TEMP_HI"]
+}
 ```
+
+### Pull Configuration (GET)
+Endpoint: `GET /api/devices/config?device_id=DEV-123&api_key=SECURE_KEY`
+```json
+{
+  "sampling_rate_seconds": 60,
+  "temp_threshold_high": 35,
+  "gps_enabled": true
+}
+```
+
+---
+
+## 📂 Project Architecture
+
+```text
 cargosafe/
 ├── src/
-│   ├── app/                        # Next.js App Router
-│   │   ├── layout.tsx              # Root layout (fonts, Navbar)
-│   │   ├── page.tsx                # Root redirect → /dashboard
-│   │   ├── globals.css             # Tailwind v4 base + atmosphere
-│   │   ├── dashboard/              # Fleet overview & stat cards
-│   │   ├── devices/                # IoT device management UI
-│   │   ├── shipments/              # Shipment table + QR modal
-│   │   ├── alerts/                 # Critical alert list + resolve
-│   │   ├── login/                  # Email/password auth page
-│   │   ├── track/[code]/           # Public tracking portal (light)
-│   │   ├── test-telemetry/         # Developer telemetry sender
-│   │   └── api/                    # Backend API routes
-│   │       ├── auth/
-│   │       │   ├── login/          # POST — Firebase REST proxy
-│   │       │   ├── register/       # POST — create user + profile
-│   │       │   └── me/             # GET  — current user profile
-│   │       ├── devices/
-│   │       │   ├── route.ts        # GET (list) / POST (create)
-│   │       │   └── [id]/route.ts   # GET / PATCH / DELETE
-│   │       ├── shipments/
-│   │       │   ├── route.ts        # GET (list) / POST (create)
-│   │       │   └── [id]/route.ts   # GET / PATCH / DELETE
-│   │       ├── telemetry/
-│   │       │   └── route.ts        # POST — ingest sensor data + auto-alerts
-│   │       ├── alerts/
-│   │       │   ├── route.ts        # GET — list user alerts
-│   │       │   └── [id]/resolve/   # PATCH — mark alert resolved
-│   │       └── track/[code]/       # GET — public tracking (no auth)
-│   │
-│   ├── components/                 # Reusable UI components
-│   │   ├── Navbar.tsx              # Sticky nav with mobile menu
-│   │   ├── AuthGuard.tsx           # Client-side route protection
-│   │   ├── TelemetryChart.tsx      # Recharts time-series graph
-│   │   └── ModernDropdown.tsx      # Custom styled dropdown
-│   │
-│   ├── lib/                        # Backend/shared logic
-│   │   ├── firebase.ts             # Firebase client SDK init (auth + db)
-│   │   ├── firebase-admin.ts       # Firebase Admin SDK init (server)
-│   │   ├── db.ts                   # Firestore CRUD abstraction layer
-│   │   ├── api-auth.ts             # JWT verification middleware
-│   │   └── alerts.ts               # Telemetry threshold evaluation
-│   │
-│   └── services/
-│       └── api.ts                  # Frontend HTTP client (token injection)
-│
-├── tailwind.config.ts              # Design system tokens & animations
-├── next.config.ts                  # Next.js configuration
-├── package.json                    # Dependencies
-└── .env.local                      # Environment variables (not committed)
+│   ├── app/                        # Next.js App Router Core
+│   │   ├── api/                    # Backend API Routes (Serverless)
+│   │   ├── dashboard/              # Fleet Overview & Analytics
+│   │   ├── devices/                # IoT Device Management
+│   │   ├── track/[code]/           # Public Tracking Portal
+│   │   └── globals.css             # Tailwind Design System
+│   ├── components/                 # Reusable React UI Library
+│   ├── lib/                        # Backend Services & DB Abstractions
+│   └── services/                   # Frontend API Fetch Wrappers
+├── tailwind.config.ts              # Custom Tokens & Animations
+└── next.config.ts                  # Next.js Build Configuration
 ```
-
----
-
-## 📖 Documentation
-
-| File | Purpose |
-|---|---|
-| `README.md` | Project overview, setup, and structure (this file) |
-| `HOW_IT_WORKS.md` | Architecture deep-dive: auth, data flow, alert engine, public tracking |
-| `AGENTS.md` | AI agent coding rules for this repository |
-
----
-
-## 🎨 Design System
-
-Defined in `tailwind.config.ts`. Key tokens:
-
-| Token | Value | Use |
-|---|---|---|
-| `base` | `#050a14` | Page background |
-| `surface` | `rgba(255,255,255,0.04)` | Card backgrounds |
-| `neon` | `#1a6fff` | Primary accent (CTA, active states) |
-| `teal` | `#00c9a7` | Online/success states |
-| `coral` | `#ff4d6d` | Danger/error states |
-| `amber` | `#f59e0b` | Warning states |
-| `violet` | `#8b5cf6` | Secondary accent |
-
-**Animations:** `fade-up`, `fade-in`, `slide-in`, `shimmer`, `pulse-slow`, `orb-drift`, `float`
 
 ---
 
 ## 🤝 Contributing
 
+We welcome contributions to CargoSafe! 
 1. Fork the repository.
-2. Create a feature branch: `git checkout -b feature/your-feature`
-3. Follow the design system — use existing Tailwind tokens, not ad-hoc colors.
-4. Submit a pull request with a clear description.
+2. Create a feature branch: `git checkout -b feature/your-feature-name`
+3. Commit your changes: `git commit -m 'feat: add some feature'`
+4. Push to the branch: `git push origin feature/your-feature-name`
+5. Open a Pull Request.
 
 ---
 
-## 📜 License
-
-MIT © CargoSafe Team
+<div align="center">
+  <p>Built with precision by the CargoSafe Engineering Team.</p>
+  <p><strong>&copy; 2026 CargoSafe. All Rights Reserved.</strong></p>
+</div>
